@@ -1,0 +1,74 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Apj.Net.Dao.Model
+{
+    public class Users : StateModel
+    {
+        private string _refUser;
+
+        public string RefUser
+        {
+            get { return _refUser; }
+            set { _refUser = value; }
+        }
+
+        private string _login;
+
+        public string Login
+        {
+            get { return _login; }
+            set { _login = value; }
+        }
+
+        private string _password;
+
+        public string Password
+        {
+            get { return _password; }
+            set { _password = value; }
+        }
+
+        private string _idrole;
+
+        public string IdRole
+        {
+            get { return _idrole; }
+            set { _idrole = value; }
+        }
+
+
+        private string _username;
+
+        public string Username
+        {
+            get { return _username; }
+            set { _username = value; }
+        }
+
+        private string _telUser;
+
+        public string TelUSer
+        {
+            get { return _telUser; }
+            set { _telUser = value; }
+        }
+
+
+        private string _adreuser;
+
+        public string UserAdress
+        {
+            get { return _adreuser; }
+            set { _adreuser = value; }
+        }
+
+        public Users()
+        {
+            SetIndicePk("USER");
+            SetPkLength(10);
+            SetTableName("Utilisateur");
+        }
+    }
+}

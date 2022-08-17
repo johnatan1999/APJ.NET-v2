@@ -1,0 +1,183 @@
+import { GetServerSideProps } from 'next';
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import TitleBorder from '../../components/border/src/TitleBorder';
+import Details from '../../components/details/Details';
+import Page from '../../components/page-wrapper/Page';
+import { Menu, {{Model_Name}} } from '../../model/apj.model';
+import ApiResponse, { ApiListResponse } from '../../model/response/ApiResponse';
+import {{Model_Name}}Service from '../../services/{{Variable_Name}}/{{Variable_Name}}.service';
+import MenuService from '../../services/menu/menu.service';
+import { Button, Icon, Snackbar } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
+import ConfirmDialog from '../../components/modal/ConfirmDialog';
+
+
+interface {{Model_Name}}DetailsPageProps {
+    {{Variable_Name}}: ApiResponse<{{Model_Name}} | any>;
+    hierarchicalMenus: ApiResponse<Menu[]>;
+    model: ApiResponse<{
+        objectModel: any;
+    }>
+}
+
+const {{Model_Name}}DetailsPage = (props: {{Model_Name}}DetailsPageProps) => {
+    const {
+        hierarchicalMenus,
+        model,
+        {{Variable_Name}}
+    } = props;
+
+    const [objectModel, setObjectModel] = useState<any>();
+    const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
+    const [snackBarMessage, setSnackbarMessage] = useState<any>();
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+    const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
+
+    const showErrorMessage = (message: string) => {
+        setOpenSnackbar(true);
+        setSnackbarMessage(message);
+        setSnackbarSeverity("error");
+    }
+
+    useEffect(() => {
+        var _objectModel = [...model.content.objectModel];
+        const keys = Object.keys({{Variable_Name}}.content);
+        for(const key of keys) {
+            for(const field of _objectModel) {
+                if(field.name.toLowerCase() === key.toLowerCase()) {
+                    field.value = {{Variable_Name}}.content[key]
+                }
+            }
+        }
+        setObjectModel(_objectModel);
+    }, [model, {{Variable_Name}}]);
+
+    const onDelete{{Model_Name}} = async (e: any) => {
+        if({{Variable_Name}}.content != null) {
+            const service = new {{Model_Name}}Service();
+            await service.delete{{Model_Name}}({{Variable_Name}}.content.id)
+            .then((res: ApiResponse<{{Model_Name}}>) => {
+                if(res.success) {
+                    {{Model_Name}}Service.redirect("/{{Variable_Name}}");                    
+                } else showErrorMessage(res.message);
+            })
+            .catch((err: Error) => {
+                console.log(err);
+                showErrorMessage(err.message);
+            });
+        }
+    }
+
+    const onOpenDeleteModal = (e: any) => {
+        setDeleteModalVisible(true);
+    }
+
+    return (
+        <Wrapper>
+            <Page className="add-{{Variable_Name}}-page" menus={hierarchicalMenus.content}>
+                <ConfirmDialog 
+                    message={"Are you sure you want to delete this {{Variable_Name}}?"}
+                    onAbort={() => {setDeleteModalVisible(false)}}
+                    show={deleteModalVisible} 
+                    onConfirm={onDelete{{Model_Name}}}/>
+                <TitleBorder title="{{Model_Name}} Details">
+                    {objectModel ? (
+                        <Details
+                            objectModel={objectModel}
+                            hiddenColumns={[]}
+                            order={["Id"]}
+                            columnsLabel={[]}
+                        />
+                    ) : <p>No content</p>}
+                </TitleBorder>
+                <div className="page-actions">
+                    <a href="/{{Variable_Name}}">
+                        <Button color="default" variant="contained" disableElevation>
+                            <Icon>arrow_back</Icon>
+                            Back to list
+                        </Button>
+                    </a>
+                    <div className="action-group">
+                        <a href={"/{{Variable_Name}}/edit?id="+{{Variable_Name}}.content.id}>
+                            <Button className="edit-btn" color="primary" variant="contained" disableElevation>
+                                Edit
+                            </Button>
+                        </a>
+                        <Button className="delete-btn" variant="contained" 
+                            onClick={onOpenDeleteModal}
+                            disableElevation>
+                            Delete
+                        </Button>
+                    </div>
+                </div>
+                <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => {setOpenSnackbar(false)}}>
+                    <MuiAlert onClose={() => {setOpenSnackbar(false)}} severity={snackbarSeverity}>
+                        {snackBarMessage}
+                    </MuiAlert>
+                </Snackbar>
+            </Page>
+        </Wrapper>
+    );
+}
+
+const Wrapper = styled.div`
+    .page-content {
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        width: 80%;
+        margin: auto;
+    }
+    .title-border {
+        padding: 0 30px;
+        margin: 50px 0 50px 0;
+    }
+    .insert-form {
+        margin: 20px 0;
+    }
+    .menu-dynamic {
+        color: var(--white);
+    }
+    .details  {
+        max-width: 800px;
+        border: none;
+        padding: 20px 0;
+    }
+    .page-actions {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        justify-content: space-between;
+    }
+    .action-group {
+        display: flex;
+        justify-content: space-around;
+    }
+    .delete-btn {
+        background-color: var(--danger);
+        color: var(--white);
+        margin: 0 5px;
+    }
+    .edit-btn {
+        margin: 0 5px;
+    }
+`;
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {    
+    const service = new {{Model_Name}}Service();
+    const hierarchicalMenus = await new MenuService().getHierarchicalMenu();
+    const model = await service.get{{Model_Name}}Model();
+    const {{Variable_Name}} = await service.get{{Model_Name}}ById(ctx.query?.id);
+    return {
+        props: {
+            hierarchicalMenus,
+            model,
+            {{Variable_Name}}
+        }
+    }
+}
+
+export default {{Model_Name}}DetailsPage;

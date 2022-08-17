@@ -1,0 +1,151 @@
+﻿using Apj.Net.Dao;
+using Apj.Net.Dao.Common;
+using Apj.Net.Dao.Common.Query;
+using Apj.Net.Dao.Connection;
+using Apj.Net.Dao.Util;
+using APJ.NET.Core.ApiResponse;
+using APJ.NET.Core.Page;
+using APJ.NET.Models;
+using APJ.NET.Models.User;
+using APJ.NET.Util;
+using System.Collections.Generic;
+using System.Data.Common;
+using System.Diagnostics;
+using System.Reflection;
+using System;
+
+namespace {{Namespace}}
+{
+    public class {{Model_Name}}Service
+    {
+        public void Add{{Model_Name}}({{Model_Name}} model)
+        {
+            model.Save();
+        }
+
+        public {{Model_Name}}[] Add{{Model_Name}}s({{Model_Name}} [] models)
+        {
+            DbConnection connection = ConnectionFactory.GetConnection(); ;
+            try
+            {
+                connection.Open();
+                DbTransaction transaction = connection.BeginTransaction();
+                foreach ({{Model_Name}} m in models)
+                    m.Save(transaction);
+                transaction.Commit();
+                return models;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+        }
+
+        public void Update{{Model_Name}}({{Model_Name}} model)
+        {
+            model.Update();
+        }
+
+        public IList<{{Model_Name}}> GetAll{{Model_Name}}()
+        {
+            IApjDao dao = ApjDaoFactory.GetInstance();
+            return dao.FindAll<{{Model_Name}}>();
+        }
+
+        public PaginatedList Search{{Model_Name}}(Dictionary<string, object> args, int page, int limit)
+        {
+            DbConnection connection = ConnectionFactory.GetConnection();
+            PaginatedList data = new PaginatedList();
+            try
+            {
+                connection.Open();
+                data.Data = SearchQuery.findWherePaginated<{{Model_Name}}>(connection, page, limit, ApjDaoUtil.MakeSearchCriteria(typeof({{Model_Name}}), args).ToArray());
+                data.TotalCount = AggregateQuery.CountWhere<{{Model_Name}}>(connection);
+                data.Page = page;
+                data.Limit = limit;
+                return data;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+        }
+
+        public {{Model_Name}} Find{{Model_Name}}ById(string id)
+        {
+            {{Model_Name}} model = new {{Model_Name}}();
+            model.Id = id;
+            model.Load();
+            return model;
+        }
+
+        public {{Model_Name}} Delete{{Model_Name}}(string id)
+        {
+            DbConnection connection = ConnectionFactory.GetConnection();
+            try
+            {
+                connection.Open();
+                {{Model_Name}} model = new {{Model_Name}}();
+                model.Id = id;
+                model.Load(connection);
+                DbTransaction transaction = connection.BeginTransaction();
+                model.Delete(transaction);
+                transaction.Commit();
+                return model;
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+        }
+
+        
+        public ObjectModel GetFormModel()
+        {
+            DbConnection connection = ConnectionFactory.GetConnection();
+            ObjectModel model = new ObjectModel();
+            try
+            {
+                connection.Open();
+                PropertyInfo[] properties = ApjDaoUtil.GetProperties(typeof({{Model_Name}}));
+                foreach (var p in properties)
+                {
+                    string table = AnnotationUtil.GetReferencedTable(p);
+                    var typeName = p.PropertyType.Name;
+                    ObjectModelField field = new ObjectModelField();
+                    switch (typeName)
+                    {
+                        case "Int32":
+                            typeName = "number";
+                            break;
+                        case "bool":
+                            typeName = "boolean";
+                            break;
+                        default: break;
+                    }
+                    field.Type = typeName;
+                    if (table != null)
+                    {
+                        field.Type = "select";
+                        List<ApjResult> res = Query.Execute("select * from " + table, connection) as List<ApjResult>;
+                        object[] data = new object[res.Count];
+                        for(int i=0; i<res.Count; i++)
+                        {
+                            data[i] = res[i].GetData();
+                        }
+                        field.Data = data;
+                        field.DataFieldLabel = "Description";
+                    }
+                    field.Name = field.Label = p.Name;
+                    model.Add(field);
+                }
+            }
+            finally
+            {
+                if (connection != null) connection.Close();
+            }
+            return model;
+        }
+
+    }
+}

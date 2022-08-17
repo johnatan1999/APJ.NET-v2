@@ -1,0 +1,56 @@
+import Config from '../../config/config.json';
+import BasicService from '../basic.service';
+import { {{Model_Name}} } from '../../model/apj.model';
+import ApiResponse from '../../model/response/ApiResponse';
+
+export default class {{Model_Name}}Service extends BasicService {
+
+    async getAll{{Model_Name}}() {
+        return await BasicService.fetchData(`${Config.{{Model_Name}}.FindAll}`);
+    }
+    
+    async getPaginated{{Model_Name}}(page=1, limit=5) {
+        return await BasicService.fetchData(`${Config.{{Model_Name}}.FindAll}/${page}/${limit}`);
+    }
+    
+    async searchPaginated{{Model_Name}}(criteria: any, page=1, limit=10) {
+        const params: any = {};
+        const keys = Object.keys(criteria);
+        for(const key of keys) {
+            if(criteria[key]) params[key] = criteria[key];
+        }     
+        return await BasicService.fetchData(`${Config.{{Model_Name}}.FindAll}/${page}/${limit}`, params);
+    }
+
+    async add{{Model_Name}}({{Variable_Name}}: any) {
+        return await BasicService.postData(Config.{{Model_Name}}.Add, {{Variable_Name}});
+    }
+
+    async edit{{Model_Name}}({{Variable_Name}}: any) {
+        return await BasicService.putData(Config.{{Model_Name}}.Edit+"/"+{{Variable_Name}}.Id, {{Variable_Name}});
+    }
+
+    async delete{{Model_Name}}(id: string) {
+        return await BasicService.deleteData(Config.{{Model_Name}}.Delete+"/"+id);
+    }
+
+    async deleteMultiple{{Model_Name}}s(ids: string []) {
+        return await BasicService.deleteData(Config.{{Model_Name}}.Delete, {data: ids});
+    }
+
+    async get{{Model_Name}}ById(id: any) {
+        return await BasicService.fetchData(Config.{{Model_Name}}.FindById+'/'+id);
+    }
+
+    async get{{Model_Name}}Model() {
+        return await BasicService.fetchData(Config.{{Model_Name}}.Model);
+    }
+
+    static async import{{Model_Name}}(e: any, cb=(_: {{Model_Name}}[]) => {} ) {
+        await BasicService.importCSVFile(e, async (err: any, data: {{Model_Name}}[]) => {
+            if(err) throw err;
+            const res: ApiResponse<{{Model_Name}}[]> = await BasicService.postData(Config.{{Model_Name}}.Import, data); 
+            cb(res.content);
+        })    
+    }
+}

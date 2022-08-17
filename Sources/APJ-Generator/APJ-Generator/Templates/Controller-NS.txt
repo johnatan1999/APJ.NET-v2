@@ -1,0 +1,110 @@
+﻿using System;
+using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using {{Model_Package}};
+using System.Diagnostics;
+using APJ.NET.Core;
+using APJ.NET.Services;
+using APJ.NET.Util;
+
+
+namespace {{Namespace}}
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class {{Model_Name}}Controller : BaseController
+    {
+
+        {{Model_Name}}Service service;
+
+        public {{Model_Name}}Controller() : base()
+        {
+            service = new {{Model_Name}}Service();
+        }
+
+        // GET: api/{{Api_Path}}
+        [HttpGet(Name = "All{{Model_Name}}")]
+        public ApjResponse Get()
+        {
+            return ProcessRequest(() =>
+            {
+                return service.GetAll{{Model_Name}}();
+            }, typeof({{Model_Name}}));
+        }
+
+        // GET: api/{{Api_Path}}/1/10
+        [HttpGet("{page}/{limit}", Name = "Search{{Model_Name}}")]
+        public ApjResponse Get(int page, int limit)
+        {
+            return ProcessRequest(() =>
+            {
+                return service.Search{{Model_Name}}(GetParams(), page, limit);
+            }, typeof({{Model_Name}}));
+        }
+
+        // GET: api/{{Api_Path}}/5
+        [HttpGet("{id}", Name = "Get{{Model_Name}}")]
+        public ApjResponse GetById(string id)
+        {
+            return ProcessRequest(() =>
+            {
+                return service.Find{{Model_Name}}ById(id);
+            }, typeof({{Model_Name}}));
+        }
+
+        // POST: api/{{Api_Path}}
+        [HttpPost]
+        public ApjResponse Post([FromBody] {{Model_Name}} a)
+        {
+            return ProcessRequest(() => {
+                service.Add{{Model_Name}}(a);
+                return a;
+            }, typeof({{Model_Name}}));
+        }
+
+        [HttpPost("import", Name ="Import{{Model_Name}}")]
+        public ApjResponse Post([FromBody] {{Model_Name}} [] models)
+        {
+            return ProcessRequest(() => {
+                service.Add{{Model_Name}}s(models);
+                return models;
+            }, typeof({{Model_Name}}));
+        }
+
+        // PUT: api/{{Api_Path}}/5
+        [HttpPut("{id}")]
+        public ApjResponse Put(string id, [FromBody] {{Model_Name}} a)
+        {
+            return ProcessRequest(() =>
+            {
+                a.Id = id;
+                service.Update{{Model_Name}}(a);
+                return a;
+            }, typeof({{Model_Name}}));
+        }
+
+        // DELETE: api/{{Api_Path}}/5
+        [HttpDelete("{id}")]
+        public ApjResponse Delete(string id)
+        {
+            return ProcessRequest(() =>
+            {
+                {{Model_Name}} a = service.Delete{{Model_Name}}(id);                
+                return a;
+            }, typeof({{Model_Name}}));
+        }
+
+        
+        [HttpGet("model", Name = "Get{{Model_Name}}Model")]
+        public ApjResponse GetModel()
+        {
+            return ProcessRequest(() =>
+            {
+                return new { 
+                    objectModel = Utility.GetObjectModel(typeof({{Model_Name}})), 
+                    formModel = service.GetFormModel() 
+                };
+            });
+        }
+    }
+}

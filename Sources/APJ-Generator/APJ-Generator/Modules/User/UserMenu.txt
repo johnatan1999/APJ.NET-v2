@@ -1,0 +1,42 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Apj.Net.Dao.Model.User
+{
+    public class UserMenu : BaseModel
+    {
+
+        private string _idMenu;
+
+        public string IdMenu
+        {
+            get { return _idMenu; }
+            set { _idMenu = value; }
+        }
+
+
+        private string _idrole;
+
+        public string IdRole
+        {
+            get { return _idrole; }
+            set { _idrole = value; }
+        }
+
+
+        private string _refuser;
+
+        public string RefUser
+        {
+            get { return _refuser; }
+            set { _refuser = value; }
+        }
+
+        public UserMenu()
+        {
+            SetTableName("UserMenu");
+        }
+
+    }
+}

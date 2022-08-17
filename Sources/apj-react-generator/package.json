@@ -1,0 +1,18 @@
+{
+  "name": "apj-react-generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin/index.js",
+  "scripts": {
+    "apj-react": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "johnatan",
+  "license": "ISC",
+  "bin": {
+    "apj-view": "./bin/index.js"
+  },
+  "dependencies": {
+    "yargs": "^13.2.4"
+  }
+}

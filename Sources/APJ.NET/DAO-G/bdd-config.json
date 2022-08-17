@@ -1,0 +1,4 @@
+{
+  "CONNECTION_STRING": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=BetSport;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"
+  "DB_NAME":  "SQL_Server"
+}

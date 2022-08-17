@@ -1,0 +1,26 @@
+{
+  "BASE_URL": "https://localhost:44380/",
+  "Login": "api/authentification",
+  "Menu": {
+    "FindById": "api/menus",
+    "FindAll": "api/menus",
+    "Add": "api/menus",
+    "Edit": "api/menus",
+    "Delete": "api/menus"
+  },
+  "Role": {
+    "FindById": "api/roles",
+    "FindAll": "api/roles",
+    "Add": "api/roles",
+    "Edit": "api/roles",
+    "Delete": "api/roles"
+  },
+  "User": {
+    "FindById": "api/users",
+    "FindAll": "api/users",
+    "Add": "api/users",
+    "Edit": "api/users",
+    "Delete": "api/users",
+    "Model": "api/users/model"
+  }
+}

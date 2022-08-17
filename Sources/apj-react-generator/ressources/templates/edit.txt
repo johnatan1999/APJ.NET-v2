@@ -1,0 +1,138 @@
+import { GetServerSideProps } from 'next';
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import TitleBorder from '../../components/border/src/TitleBorder';
+import Page from '../../components/page-wrapper/Page';
+import UpdateForm from '../../components/update-form/src/UpdateForm';
+import { Menu, {{Model_Name}} } from '../../model/apj.model';
+import ApiResponse from '../../model/response/ApiResponse';
+import {{Model_Name}}Service from '../../services/{{Variable_Name}}/{{Variable_Name}}.service';
+import MenuService from '../../services/menu/menu.service';
+import { Snackbar } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
+
+interface Edit{{Model_Name}}PageProps {
+    {{Variable_Name}}: ApiResponse<{{Model_Name}} | any>;
+    hierarchicalMenus: ApiResponse<Menu[]>;
+    model: ApiResponse<{
+        objectModel: any;
+        formModel: any;
+    }>
+}
+
+const Edit{{Model_Name}}Page = (props: Edit{{Model_Name}}PageProps) => {
+    const {
+        hierarchicalMenus,
+        model,
+        {{Variable_Name}}
+    } = props;
+
+    const [formModel, setFormModel] = useState<any[]>([]);
+    const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
+    const [snackBarMessage, setSnackbarMessage] = useState<any>();
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+
+    const showSuccessMessage = (message: string) => {
+        setOpenSnackbar(true);
+        setSnackbarMessage(message);
+        setSnackbarSeverity("success");
+    }
+
+    const showErrorMessage = (message: string) => {
+        setOpenSnackbar(true);
+        setSnackbarMessage(message);
+        setSnackbarSeverity("error");
+    }
+
+    useEffect(() => {
+        // setFormModel(model.content.formModel.fields);
+        // changeFormModelValue({{Variable_Name}}.content);
+        var _objectModel = [...model.content.formModel.fields];
+        const keys = Object.keys({{Variable_Name}}.content);
+        for(const key of keys) {
+            for(const field of _objectModel) {
+                if(field.name.toLowerCase() === key.toLowerCase()) {
+                    field.value = {{Variable_Name}}.content[key]
+                }
+            }
+        }
+        setFormModel(_objectModel);
+    }, [model, {{Variable_Name}}]);
+
+    const onEdit{{Model_Name}} = async (e: any, {{Variable_Name}}: any) => {
+        const service = new {{Model_Name}}Service();
+        await service.edit{{Model_Name}}({{Variable_Name}})
+        .then((res: ApiResponse<{{Model_Name}}>) => {
+            if(res.success) {
+                showSuccessMessage(res.message);
+                document.location.href = "/{{Variable_Name}}/details?id="+res.content.id;
+            } else showErrorMessage(res.message);
+        })
+        .catch((err: Error) => {
+            console.log(err);
+            showErrorMessage(err.message);
+        });
+    }
+
+    return (
+        <Wrapper>
+            <Page className="edit-{{Variable_Name}}-page" menus={hierarchicalMenus.content}>
+                <TitleBorder title="Edit {{Model_Name}}">
+                <UpdateForm 
+                        className="update-form"
+                        objectModel={formModel}
+                        onSubmit={onEdit{{Model_Name}}}
+                        hiddenColumns={["Id"]}
+                        // columnsLabel={[
+                        //     {current: 'Idcategory', new: 'Category'},
+                        //     {current: 'Idteama', new: 'Team A'},
+                        //     {current: 'Idteamb', new: 'Team B'}
+                        // ]}
+                    />
+                </TitleBorder>
+                <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => {setOpenSnackbar(false)}}>
+                    <MuiAlert onClose={() => {setOpenSnackbar(false)}} severity={snackbarSeverity}>
+                        {snackBarMessage}
+                    </MuiAlert>
+                </Snackbar>
+            </Page>
+        </Wrapper>
+    );
+}
+
+const Wrapper = styled.div`
+    .page-content {
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+    .title-border {
+        padding: 0 100px;
+        margin-top: 10px;
+        /* width: 60vw; */
+    }
+    .update-form {
+        margin: 0;
+    }
+    .menu-dynamic {
+        color: var(--white);
+    }
+`;
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {    
+    const service = new {{Model_Name}}Service();
+    const hierarchicalMenus = await new MenuService().getHierarchicalMenu();
+    const model = await service.get{{Model_Name}}Model();
+    const {{Variable_Name}} = await service.get{{Model_Name}}ById(ctx.query?.id);
+    return {
+        props: {
+            hierarchicalMenus,
+            model,
+            {{Variable_Name}}
+        }
+    }
+}
+
+export default Edit{{Model_Name}}Page;

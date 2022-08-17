@@ -1,0 +1,23 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Apj.Net.Dao.Model.User
+{
+    public class Role : BaseModel
+    {
+        private string _description;
+
+        public string Description
+        {
+            get { return _description; }
+            set { _description = value; }
+        }
+
+        public Role()
+        {
+            SetTableName("Roles");
+        }
+    }
+
+}

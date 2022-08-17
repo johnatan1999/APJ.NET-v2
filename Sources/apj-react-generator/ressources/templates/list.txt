@@ -1,0 +1,347 @@
+import TablePagination from '@material-ui/core/TablePagination';
+import { GetServerSideProps } from 'next';
+import React, { useEffect, useState } from 'react';
+import styled from 'styled-components';
+import TitleBorder from '../../components/border/src/TitleBorder';
+import Details from '../../components/details/Details';
+import InsertForm from '../../components/insert-form/src/InsertForm';
+import ApjList from '../../components/list/src/ApjTable';
+import ConfirmDialog from '../../components/modal/ConfirmDialog';
+import Modal from '../../components/modal/Modal';
+import Page from '../../components/page-wrapper/Page';
+import SearchForm from '../../components/search/src/SearchForm';
+import UpdateForm from '../../components/update-form/src/UpdateForm';
+import { Menu, {{Model_Name}} } from '../../model/apj.model';
+import ApiResponse, { ApiListResponse } from '../../model/response/ApiResponse';
+import {{Model_Name}}Service from '../../services/{{Variable_Name}}/{{Variable_Name}}.service';
+import MenuService from '../../services/menu/menu.service';
+import { Snackbar } from '@material-ui/core';
+import MuiAlert from '@material-ui/lab/Alert';
+
+interface {{Model_Name}}PageProps {
+    {{Variable_Name}}s: ApiListResponse<{{Model_Name}}>;
+    hierarchicalMenus: ApiResponse<Menu[]>;
+    model: ApiResponse<{
+        objectModel: any;
+        formModel: any;
+    }>
+}
+
+const {{Model_Name}}Page = (props: {{Model_Name}}PageProps) => {
+    const {
+        {{Variable_Name}}s,
+        hierarchicalMenus,
+        model
+    } = props;
+
+    const [addModalVisible, setAddModalVisible] = useState<boolean>(false);
+    const [editModalVisible, setEditModalVisible] = useState<boolean>(false);
+    const [detailsModalVisible, setDetailsModalVisible] = useState<boolean>(false);
+    const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
+    const [{{Variable_Name}}List, set{{Model_Name}}List] = useState<{{Model_Name}}[]>([]);
+
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [rowsPerPage, setRowsPerPage] = useState<number>(5);
+    const [dataLoading, setDataLoading] = useState<boolean>(false);
+    const [totalCount, setTotalCount] = useState<number>(10);
+    const [selected{{Model_Name}}, setSelected{{Model_Name}}] = useState<{{Model_Name}}>();
+    const [objectModel, setObjectModel] = useState<any>();
+    const [formModel, setFormModel] = useState<any>();
+    const [openSnackbar, setOpenSnackbar] = useState<boolean>(false);
+    const [snackBarMessage, setSnackbarMessage] = useState<any>();
+    const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
+    const [searchData, setSearchData] = useState<any>();
+
+    const showSuccessMessage = (message: string) => {
+        setOpenSnackbar(true);
+        setSnackbarMessage(message);
+        setSnackbarSeverity("success");
+    }
+
+    const showErrorMessage = (message: string) => {
+        setOpenSnackbar(true);
+        setSnackbarMessage(message);
+        setSnackbarSeverity("error");
+    }
+
+    useEffect(() => {
+        set{{Model_Name}}List({{Variable_Name}}s.content.data);
+        setRowsPerPage({{Variable_Name}}s.content.limit);
+        setTotalCount({{Variable_Name}}s.content.totalCount);
+        setCurrentPage({{Variable_Name}}s.content.page-1);
+        setObjectModel({{Variable_Name}}s.objectModel);
+        setFormModel(model.content.formModel.fields);
+    }, [{{Variable_Name}}s, model]);
+
+    const search{{Model_Name}} = async (e: any, {{Variable_Name}}: any) => {
+        const service = new {{Model_Name}}Service();
+        setSearchData({{Variable_Name}});
+        await service.searchPaginated{{Model_Name}}({{Variable_Name}})
+        .then((res: ApiListResponse<{{Model_Name}}>) => {
+            set{{Model_Name}}List(res.content.data);
+            setTotalCount(res.content.totalCount);
+            setCurrentPage(res.content.page);
+        })
+        .catch((err:any)=>{
+            console.log(err);
+            showErrorMessage(err.message);
+        });
+    }
+
+    const onAdd{{Model_Name}} = async (e: any, {{Variable_Name}}: any) => {
+        document.location.href='/{{Variable_Name}}/add';
+        /*const service = new {{Model_Name}}Service();
+        await service.add{{Model_Name}}({{Variable_Name}})
+        .then((res: ApiResponse<{{Model_Name}}>) => {
+            if(res.success) {
+                set{{Model_Name}}List([
+                    res.content,
+                    ...{{Variable_Name}}List
+                ]);
+                setTotalCount(totalCount+1);
+                showSuccessMessage(res.message);
+            } else showErrorMessage(res.message);
+            setAddModalVisible(false);
+        })
+        .catch((err: Error) => {
+            console.log(err);
+            showErrorMessage(err.message);
+            setAddModalVisible(false);
+        });*/
+    }
+
+    const onEdit{{Model_Name}} = async (e: any, {{Variable_Name}}: any) => {
+        document.location.href='/{{Variable_Name}}/edit?id='+{{Variable_Name}}.id;
+        /*const service = new {{Model_Name}}Service();
+        await service.edit{{Model_Name}}({{Variable_Name}})
+        .then((res: ApiResponse<{{Model_Name}}>) => {
+            if(res.success) {
+                set{{Model_Name}}List({{Variable_Name}}List.map((m: {{Model_Name}}) => {
+                    return m.id == res.content.id ? res.content : m;
+                }));
+                setEditModalVisible(false);
+                showSuccessMessage(res.message);
+            } else showErrorMessage(res.message);
+        })
+        .catch((err: Error) => {
+            console.log(err);
+            showErrorMessage(err.message);
+            setEditModalVisible(false);
+        });*/
+    }
+
+    const onDelete{{Model_Name}} = async (e: any) => {
+        if(selected{{Model_Name}} != null) {
+            const service = new {{Model_Name}}Service();
+            await service.delete{{Model_Name}}(selected{{Model_Name}}.id)
+            .then((res: ApiResponse<{{Model_Name}}>) => {
+                if(res.success) {
+                    set{{Model_Name}}List({{Variable_Name}}List.filter((m: {{Model_Name}}) => {
+                        return m.id != selected{{Model_Name}}.id;
+                    }));
+                    setTotalCount(totalCount-1);
+                    setDeleteModalVisible(false);
+                    showSuccessMessage(res.message);
+                } else showErrorMessage(res.message);
+            })
+            .catch((err: Error) => {
+                console.log(err);
+                showErrorMessage(err.message);
+                setDeleteModalVisible(false);
+            });
+        }
+    }
+
+    const onDeleteMultiple{{Model_Name}} = async (e: any, {{Variable_Name}}sId=[]) => {
+        const service = new {{Model_Name}}Service();
+        await service.deleteMultiple{{Model_Name}}s({{Variable_Name}}sId)
+        .then((res: ApiResponse<{{Model_Name}}>) => {
+            if(res.success) {
+                console.log(res.message);
+                showSuccessMessage(res.message);
+            } else {
+                showErrorMessage(res.message);
+            }
+        })
+        .catch((err: any) => {
+            console.log(err);
+            showErrorMessage(err.message)
+        });
+    } 
+
+    const exportData = async ({{Variable_Name}}s: any[]) => {
+        await new {{Model_Name}}Service().exportCSVFile({{Variable_Name}}s, '{{Variable_Name}}s');
+    }
+
+    const onChangePage = async (e: any, page: number) => {
+        setDataLoading(true);
+        const service = new {{Model_Name}}Service();
+        const result: ApiListResponse<{{Model_Name}}> = await service.searchPaginated{{Model_Name}}(searchData, page+1, rowsPerPage);
+        if(result) {
+            console.log(result);
+            set{{Model_Name}}List([
+                ...result.content.data,
+            ])
+            setCurrentPage(page);
+        }
+        setDataLoading(false);
+    }
+
+    const onChangeRowsPerPage = (e: any) => {
+        setRowsPerPage(e.target.value)
+    }
+
+    const onOpenEditModal = ({{Variable_Name}}: any, e: any) => {
+        setSelected{{Model_Name}}({{Variable_Name}});
+        changeFormModelValue({{Variable_Name}});
+        setEditModalVisible(true);
+    }
+
+    const onOpenDeleteModal = ({{Variable_Name}}: any, e: any) => {
+        setSelected{{Model_Name}}({{Variable_Name}});
+        setDeleteModalVisible(true);
+    }
+
+    const onOpenDetailsModal = ({{Variable_Name}}: any, e: any) => {
+        document.location.href='/{{Variable_Name}}/details?id='+{{Variable_Name}}.id;
+        /*
+        setSelected{{Model_Name}}({{Variable_Name}});
+        changeObjectModelValue({{Variable_Name}});
+        setDetailsModalVisible(true);*/
+    }
+
+    const changeObjectModelValue = ({{Variable_Name}}: any) => {
+        var _objectModel = [...objectModel];
+        const keys = Object.keys({{Variable_Name}});
+        for(const key of keys) {
+            for(const field of _objectModel) {
+                if(field.name.toLowerCase() === key.toLowerCase()) {
+                    field.value = {{Variable_Name}}[key]
+                }
+            }
+        }
+        setObjectModel(_objectModel);
+    }
+
+    const changeFormModelValue = (menu: any) => {
+        var _objectModel = [...formModel];
+        const keys = Object.keys(menu);
+        for(const key of keys) {
+            for(const field of _objectModel) {
+                if(field.name.toLowerCase() === key.toLowerCase()) {
+                    field.value = menu[key]
+                }
+            }
+        }
+        setFormModel(_objectModel);
+    }
+
+    return (
+        <Wrapper>
+            <Page menus={hierarchicalMenus.content}>
+                <TitleBorder title="Search">
+                    <SearchForm
+                        objectModel={formModel}
+                        onSubmit={search{{Model_Name}}}
+                        columnsLabel={[
+                            {current: 'IdRole', new: 'Role'}
+                        ]}
+                    />
+                </TitleBorder>
+                <TitleBorder title="{{Model_Name}} List">
+                    <Modal 
+                        width="large" 
+                        show={addModalVisible} 
+                        title="Add {{Variable_Name}}" 
+                        closeOnClickOutside={false}
+                        onClose={()=>{ setAddModalVisible(false); }}> 
+                        <InsertForm 
+                            className="insert-form"
+                            objectModel={formModel}
+                            onSubmit={onAdd{{Model_Name}}}
+                            hiddenColumns={["Id"]}
+                        />
+                    </Modal>
+                    <Modal show={detailsModalVisible} title="{{Model_Name}} details" onClose={()=>{ setDetailsModalVisible(false); }}> 
+                        <Details
+                            objectModel={objectModel}
+                        />
+                    </Modal>
+                    <Modal show={editModalVisible} title="Edit {{Variable_Name}}" onClose={()=>{ setEditModalVisible(false); }}>
+                        <UpdateForm
+                            objectModel={formModel}
+                            onSubmit={onEdit{{Model_Name}}}
+                            hiddenColumns={["Id"]}
+                        />
+                    </Modal>
+                    <ConfirmDialog 
+                        message={"Are you sure you want to delete this {{Variable_Name}}?"}
+                        onAbort={() => {setDeleteModalVisible(false)}}
+                        show={deleteModalVisible} 
+                        onConfirm={onDelete{{Model_Name}}}/>
+                    <ApjList 
+                        editAction={onOpenEditModal}
+                        deleteAction={onOpenDeleteModal}
+                        addAction={() => {setAddModalVisible(true)}} 
+                        detailsAction={onOpenDetailsModal}
+                        multipleDeleteAction={onDeleteMultiple{{Model_Name}}}
+                        objectModel={objectModel}
+                        showExportButton
+                        showImportButton
+                        activeMultipleSelection={false}
+                        exportAction={exportData}
+                        columnsLabel={[
+                            {current: 'IdRole', new: 'Role'}
+                        ]}
+                        importAction={(e:any) => { 
+                            {{Model_Name}}Service.import{{Model_Name}}(e, (new{{Model_Name}}s: {{Model_Name}}[])=>{
+                                set{{Model_Name}}List([
+                                    ...new{{Model_Name}}s,
+                                    ...{{Variable_Name}}List
+                                ]);
+                            });
+                        }}
+                        data={{{Variable_Name}}List} />
+                    {rowsPerPage>0 && totalCount>10 && <TablePagination
+                        component="div"
+                        count={totalCount}
+                        page={currentPage}
+                        onPageChange={onChangePage}
+                        rowsPerPage={rowsPerPage}
+                        onRowsPerPageChange={onChangeRowsPerPage}
+                    />}
+                </TitleBorder>
+                <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => {setOpenSnackbar(false)}}>
+                    <MuiAlert onClose={() => {setOpenSnackbar(false)}} severity={snackbarSeverity}>
+                        {snackBarMessage}
+                    </MuiAlert>
+                </Snackbar>
+            </Page>
+        </Wrapper>
+    );
+}
+
+const Wrapper = styled.div`
+    .insert-form {
+        margin: 30px 0;
+    }
+    .menu-dynamic {
+        color: var(--white);
+    }
+`;
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {    
+    const service = new {{Model_Name}}Service();
+    const {{Variable_Name}}s = await service.getPaginated{{Model_Name}}(1, 10);
+    const hierarchicalMenus = await new MenuService().getHierarchicalMenu();
+    const model = await service.get{{Model_Name}}Model();
+    return {
+        props: {
+            {{Variable_Name}}s,
+            hierarchicalMenus,
+            model
+        }
+    }
+}
+
+export default {{Model_Name}}Page;
