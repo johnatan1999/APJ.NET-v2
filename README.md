@@ -1,6 +1,6 @@
 # APJ.NET
 Le projet est composé de 5 sous-projets:
-  - [**APJ-Generator**](https://github.com/johnatan1999/APJ.NET-v2/tree/main/Sources/APJ-Generator/APJ-Generator)  
+  - [**APJ-Generator**](//github.com/johnatan1999/APJ.NET-v2/tree/main/Sources/APJ-Generator/APJ-Generator)  
     Générateur de code backend à partir d'un template donné
     - Mapping des modèles (Database Frist)
     - Générateur de controlleur
